@@ -1,0 +1,40 @@
+//
+// Prefix header for all source files of the 'SearchPerson4' target in the 'SearchPerson4' project
+//
+
+#import <Availability.h>
+
+#ifndef __IPHONE_3_0
+#warning "This project uses features only available in iOS SDK 3.0 and later."
+#endif
+
+#ifdef __OBJC__
+    #import <UIKit/UIKit.h>
+    #import <Foundation/Foundation.h>
+#import "Reachability.h"
+#import "MBHUDView.h"
+#import "AFNetworking.h"
+
+
+//DEBUG 调试打印
+#ifdef DEBUG
+#define debugLog(...) NSLog(__VA_ARGS__)
+#define debugMethod() NSLog(@"%s", __func__)
+#else
+#define debugLog(...)
+#define debugMethod()
+#endif
+
+#define BG_COLOR	[UIColor colorWithRed:0.184f green:0.619f blue:0.251f alpha:1.0f]
+#define BARBUTTON(TITLE, SELECTOR) 	[[UIBarButtonItem alloc] initWithTitle:TITLE style:UIBarButtonItemStylePlain target:self action:SELECTOR]
+
+#define NAVBAR_HEIGHT 44
+
+#define SCREEN_WIDTH ([UIScreen mainScreen].bounds.size.width)
+#define SCREEN_HEIGHT ([UIScreen mainScreen].bounds.size.height)
+#define SCREEN_ORIGIN_X [UIScreen mainScreen].bounds.origin.x
+#define SCREEN_ORIGIN_Y [UIScreen mainScreen].bounds.origin.y
+#define OS_VERSION [[[UIDevice currentDevice] systemVersion] floatValue]
+
+
+#endif
