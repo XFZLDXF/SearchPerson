@@ -7,9 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "PullTableView.h"
 
-
-@interface SearchPersonMainViewController : UIViewController
+@interface SearchPersonMainViewController : UIViewController<UITableViewDataSource,PullTableViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UIScrollView *sv;
 
@@ -17,4 +17,7 @@
 @property(nonatomic) int TimeNum;
 @property(nonatomic) BOOL Tend;
 @property(strong,nonatomic) NSArray *arry;
+@property (weak, nonatomic) IBOutlet PullTableView *pullTableView;
+
+
 @end

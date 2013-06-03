@@ -46,6 +46,8 @@
                 TBXMLElement *weibotext = [TBXML childElementNamed:@"weibotext" parentElement:dataElement];
                 TBXMLElement *update_time = [TBXML childElementNamed:@"_update_time" parentElement:dataElement];
                 TBXMLElement *lastmod = [TBXML childElementNamed:@"lastmod" parentElement:dataElement];
+                
+                NSLog(@"========%@",[TBXML textForElement:phone]);
                 NSDictionary *dic = @{@"resNum ": [TBXML textForElement:resNum],
                 @"disp": [TBXML textForElement:dispNum],
                 @"source" : [TBXML textForElement:source],

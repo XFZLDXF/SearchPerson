@@ -8,7 +8,8 @@
 
 #import <UIKit/UIKit.h>
 #import "TBXML.h"
-@interface SearchViewController : UIViewController<UISearchBarDelegate,UITableViewDataSource,UITableViewDelegate>
+#import "PullTableView.h"
+@interface SearchViewController : UIViewController<UISearchBarDelegate,UITableViewDataSource,PullTableViewDelegate>
 {
     NSMutableArray *results;
     BOOL isLoading;
@@ -18,7 +19,7 @@
 }
 
 @property (weak, nonatomic) IBOutlet UISearchBar *searchBar;
-@property (weak, nonatomic) IBOutlet UITableView *tableResult;
+@property (weak, nonatomic) IBOutlet PullTableView *tableResult;
 
 -(void)doSearch;
 -(void)clear;

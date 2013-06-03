@@ -8,8 +8,9 @@
 
 #import <Foundation/Foundation.h>
 #import "TBXML.h"
-#import "PersonInfo.h"
+
 @interface Tool : NSObject
 
-+(PersonInfo *)getSPDetailInfo:(NSString *)response;
+
++ (void)TakeException:(NSException *)exception;
 @end

@@ -7,10 +7,14 @@
 //
 
 #import "SearchViewController.h"
-#import "PersonInfo.h"
+#import "DataCell.h"
 #import "AFSPClient.h"
 #import "Config.h"
 #import "TBXML.h"
+#import "ParserData.h"
+#import "Tool.h"
+#import "Load.h"
+
 
 #define BAIDU_SEARCHPERSON_SEARCH_API @"http://opendata.baidu.com/api.php?resource_id=6109&format=xml&ie=utf-8&oe=utf-8&query="
 @interface SearchViewController ()
@@ -37,6 +41,10 @@
     self.searchBar.tintColor = BG_COLOR;
     [self.searchBar becomeFirstResponder];
     self.searchBar.showsCancelButton=YES;
+    allCount = 0;
+    results = [[NSMutableArray alloc] initWithCapacity:20];
+    self.tableResult.separatorColor = BG_COLOR;
+    self.tableResult.hidden = YES;
 
 
 }
@@ -71,130 +79,54 @@
     self.searchBar.showsCancelButton=NO;
     [self clear];
     [self doSearch];
-    for (int i = 0;i< [self.array count];i++) {
-        debugLog(@"/////////////////////");
-        
-        debugLog(@"AGE = %@",[self.array objectAtIndex:i]);
-    }
-  
+      
 }
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-//http://opendata.baidu.com/api.php?resource_id=6109&format=xml&ie=utf-8&oe=utf-8&query=%E6%9D%8E%E7%BA%A2&from_mid=1&rn=20&pn=0
+
 
 
 -(void)doSearch
 {
-//   http://webservice.webxml.com.cn/WebServices/WeatherWS.asmx/getRegionProvince
+    
     isLoading = YES;
     if ([Config instance].isNetWorking) {
         debugLog(@"网络 %d",[Config instance].isNetWorking);
         int pageIndex = allCount/20;
-        _array = [[NSMutableArray alloc] initWithCapacity:0];
+        self.array = [[NSMutableArray alloc] initWithCapacity:0];
         NSString *url = [NSString stringWithFormat:@"%@%@&from_mid=1&rn=%d&pn=%d",BAIDU_SEARCHPERSON_SEARCH_API,[self encodeToPercentEscapeString:self.searchBar.text],20,pageIndex];
-        
+          __weak Load *load = [[Load alloc] initWithLoading:self];
         [[AFSPClient sharedInstance] postPath:url parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             debugLog(@"加载成功");
-           
+            self.tableResult.hidden = NO;
             isLoading = NO;
             allCount +=20;
             NSString *response = operation.responseString;
-            debugLog(@"加载成功111111111");
             @try {
-//                PersonInfo *p = [[PersonInfo alloc] init];
-                
-                TBXML *xml = [[TBXML alloc] initWithXMLString:response];
-//                debugLog(@"response = %@",response);
-                TBXMLElement *root = xml.rootXMLElement;
-                if (root) {
-                    TBXMLElement *dataElement = [TBXML childElementNamed:@"data" parentElement:root];
-                    TBXMLElement *resNum = [TBXML childElementNamed:@"resNum" parentElement:dataElement];
-                    TBXMLElement *dispNum = [TBXML childElementNamed:@"dispNum" parentElement:dataElement];
-                    NSLog(@"------------%d  %d",[[TBXML textForElement:resNum] intValue],[[TBXML textForElement:dispNum] intValue]);
-                    TBXMLElement *disp_dataElement = [TBXML childElementNamed:@"disp_data" parentElement:dataElement];
-                    if (disp_dataElement) {
-                                                TBXMLElement * dataElement = [TBXML childElementNamed:@"data" parentElement:disp_dataElement];
-                        while (dataElement) {
-                            
-                            TBXMLElement *source = [TBXML childElementNamed:@"from" parentElement:dataElement];
-                           
-                            TBXMLElement *url = [TBXML childElementNamed:@"url" parentElement:dataElement];
-                             
-                            TBXMLElement *name = [TBXML childElementNamed:@"name" parentElement:dataElement];
-                           
-                            TBXMLElement *age = [TBXML childElementNamed:@"age" parentElement:dataElement];
-                          
-                            TBXMLElement *sex = [TBXML childElementNamed:@"sex" parentElement:dataElement];
-                             
-                            TBXMLElement *desc = [TBXML childElementNamed:@"desc" parentElement:dataElement];
-                            TBXMLElement *phone = [TBXML childElementNamed:@"phone" parentElement:dataElement];
-                                                       TBXMLElement *remarks = [TBXML childElementNamed:@"remarks" parentElement:dataElement];
-                            TBXMLElement *found = [TBXML childElementNamed:@"found" parentElement:dataElement];
-                            
-                            TBXMLElement *input_time = [TBXML childElementNamed:@"input_time" parentElement:dataElement];
-                             NSLog(@"---===%@",[TBXML textForElement:input_time]);
-                            TBXMLElement *weibotext = [TBXML childElementNamed:@"weibotext" parentElement:dataElement];
-//                            NSString *string = [[NSString alloc] initWithString:[TBXML textForElement:weibotext]];
-//                            NSLog(@"name = %@",string);
-
-                            TBXMLElement *update_time = [TBXML childElementNamed:@"_update_time" parentElement:dataElement];
-                            TBXMLElement *lastmod = [TBXML childElementNamed:@"lastmod" parentElement:dataElement];
-                            /*
-                            PersonInfo *p = [[PersonInfo alloc] initWithParameters_Source:[TBXML textForElement:source]
-                                                                                   andUrl:[NSURL URLWithString:[TBXML textForElement:url]]
-                                                                                  andName:[TBXML textForElement:name]
-                                                                                   andAge:[[TBXML textForElement:age] intValue]
-                                                                                   andSex:[TBXML textForElement:sex]
-                                                                                   andDes:[TBXML textForElement:desc]
-                                                                                 andPhone:[TBXML textForElement:phone]
-                                                                               andRemarks:[TBXML textForElement:remarks]
-                                                                                 andFound:[[TBXML textForElement:found] intValue]
-                                                                            andInput_time:[[TBXML textForElement:input_time] intValue]
-                                                                             andWeiboText:[TBXML textForElement:weibotext]
-                                                                               andLastmod:[TBXML textForElement:lastmod]
-                                                                           andUpdate_time:[[TBXML textForElement:update_time] intValue]];
-                            */
-                            NSDictionary *dic = @{@"resNum ": [TBXML textForElement:resNum],
-                            @"disp": [TBXML textForElement:dispNum],
-                            @"source" : [TBXML textForElement:source],
-                            @"url": [TBXML textForElement:url],
-                            @"name": [TBXML textForElement:name],
-                            @"age": [TBXML textForElement:age],
-                            @"sex": [TBXML textForElement:sex],
-                            @"desc": [TBXML textForElement:desc],
-                            @"<phone": [TBXML textForElement:phone],
-                            @"remarks": [TBXML textForElement:remarks],
-                            @"found": [TBXML textForElement:found] ,
-                            @"input_time": [TBXML textForElement:input_time] ,
-                            @"weibotext": [TBXML textForElement:weibotext],
-                            @"lastmod": [TBXML textForElement:lastmod],
-                            @"update_time": [TBXML textForElement:update_time]};
-                            /*
-                            
-//                            p.source = [TBXML textForElement:sourceElement];
-                            p.source = [TBXML textForElement:source];
-                            p.url = [NSURL URLWithString:[TBXML textForElement:url]];
-                            p.age = [[TBXML textForElement:age] intValue];
-                            p.des = [TBXML textForElement:desc];
-                             */
-                            
-//                            debugLog(@"=======%@",self.array);
-//                            debugLog(@"url = %@",p.source);
-//                            p = nil;
-                            dataElement = [TBXML nextSiblingNamed:@"data" searchFromElement:dataElement];
-                            [_array addObject:dic];
-                            
-                        }
+                dispatch_async(dispatch_get_global_queue(0, 0), ^{
+//                   数据处理区
+                      results = [ParserData parserXmlData:response];
+                    if (results) {
+                        isLoadOver = YES;
+//                        debugLog(@"results = %@",[[results objectAtIndex:3] objectForKey:@"name"]);
                     }
-                }
-                debugLog(@"NSArray = %@",self.array);
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                      
+//                  主线程  界面处理区域
+                       [self.tableResult reloadData];
+                    });
+                });
+               
+                
+//                debugLog(@"results = %@",results);
       
             }
             @catch (NSException *exception) {
-                debugLog(@"catch %@",exception.description);
+                [Tool TakeException:exception];
+                debugLog(@"catch 异常%@",exception.description);
             }
             @finally {
                 debugLog(@"finally");
@@ -203,10 +135,9 @@
             debugLog(@"加载出错,请检查网络");
         }];
         
-        debugLog(@"array = %@",self.array);
     }
+    
     [self.tableResult reloadData];
-
 }
 
 -(void)clear
@@ -223,9 +154,32 @@
 
 
 
-#pragma mark -
-#pragma mark UITableViewDelegate Methods
 
+#pragma mark UITableViewDelegate Methods
+#pragma mark - Refresh and load more methods
+
+- (void) refreshTable
+{
+    /*
+     
+     Code to actually refresh goes here.  刷新代码放在这
+     
+     */
+    self.tableResult.pullLastRefreshDate = [NSDate date];
+    self.tableResult.pullTableIsRefreshing = NO;
+}
+
+- (void) loadMoreDataToTable
+{
+    /*
+     
+     Code to actually load more data goes here.  加载更多实现代码放在在这
+     
+     */
+    self.tableResult.pullTableIsLoadingMore = NO;
+}
+
+#pragma mark - UITableViewDataSource
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     return 1;
@@ -233,28 +187,63 @@
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [self.array count];
-
+    if (isLoadOver) {
+        return results.count == 0 ? 1 : results.count;
+    }
+    
+    else
+        return [results count] +1;
+    
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *CellIdentify =@"Cell";
     
+    NSDictionary *dicData = [NSDictionary dictionary];
+    
+    static NSString *CellIdentify =@"Cell";
+    self.tableResult = tableView;
+    //    DataCell *cell = [self.tableResult dequeueReusableCellWithIdentifier:CellIdentify];
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentify];
     if (cell == nil) {
+        //        cell = [[DataCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentify];
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentify];
     }
-    PersonInfo *p = [[PersonInfo alloc] init];
-     p =[self.array objectAtIndex:indexPath.row];
-    cell.textLabel.text = p.weibotext;
-    debugLog(@"text = %@",p.weibotext);
+    
+    debugLog(@"lkfjsffns  %d",[results count]);
+    
+    if ([results count] > 0) {
+        NSLog(@"----%@",[[results objectAtIndex:indexPath.row] valueForKey:@"name"]);
+        cell.textLabel.text =[[results objectAtIndex:indexPath.row] valueForKey:@"name"] ;
+    }
+    //    NSLog(@"----%@",[results objectAtIndex:indexPath.row]);
     return cell;
 }
 
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (isLoading) {
+        return results.count == 0 ? 62 : 50;
+    }
+    return indexPath.row < results.count ? 62:50;
+}
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     [self.tableResult deselectRowAtIndexPath:indexPath animated:YES];
-   
+    
+}
+
+#pragma mark - PullTableViewDelegate
+
+- (void)pullTableViewDidTriggerRefresh:(PullTableView *)pullTableView
+{
+    
+    [self performSelector:@selector(refreshTable) withObject:nil afterDelay:3.0f];
+}
+
+- (void)pullTableViewDidTriggerLoadMore:(PullTableView *)pullTableView
+{
+    [self performSelector:@selector(loadMoreDataToTable) withObject:nil afterDelay:3.0f];
 }
 @end
